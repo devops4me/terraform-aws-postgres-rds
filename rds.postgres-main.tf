@@ -1,25 +1,31 @@
 
 
+/*
+ | --
+ | -- The database username is constructed with a prefix of "user_rw_"
+ | -- and a random 7 character suffix as per best practise.
+ | --
+ | -- This reduces the attack surface and minimizes accidental connections
+ | -- to a (say) canary (as opposed to a production database).
+ | --
+*/
 locals {
-
     db_username = "user_rw_${ random_string.username_suffix.result }"
-
 }
 
 
 /*
  | --
- | -- Create a simple AWS PostgreSQL RDS database from either the
- | -- last available snapshot, or via the specified snapshot identifier
- | -- of another database.
+ | -- If the in_clone_snapshot flag is set to false we take this as a
+ | -- signal to create a new blank database.
  | --
- | -- This module effectively clones a database at the point at which
- | -- the snapshot in question is taken.
+ | -- Any snapshot identifier that may be provided is ignored so it is
+ | -- safe to set this variable even when you want a new database.
  | --
 */
-resource aws_db_instance postgres {
+resource aws_db_instance new {
 
-########    snapshot_identifier = length( data.aws_db_snapshot.parent ) == 0 ? null : data.aws_db_snapshot.parent[0]. ##### is this ID
+    count = var.in_clone_snapshot ? 0 : 1
     identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
 
     name     = var.in_database_name
@@ -32,19 +38,88 @@ resource aws_db_instance postgres {
     multi_az       = true
     allocated_storage = 32
 
-    storage_encrypted      = false
     vpc_security_group_ids = [ var.in_security_group_id ]
     db_subnet_group_name   = aws_db_subnet_group.me.id
     skip_final_snapshot    = true
 
+    copy_tags_to_snapshot   = true
+    storage_encrypted       = true
+    storage_encrypted       = true
+    backup_retention_period = 28
+    backup_window           = "21:00-23:00"
+    maintenance_window      = "mon:00:00-mon:03:00"
+
+    tags = {
+        Name  = var.in_database_name
+        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+        Class = "${ var.in_ecosystem_name }"
+        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
+    }
+
 }
 
 
-#### data aws_db_snapshot parent {
-####     count = length( var.in_id_of_db_to_clone ) > 0 ? 1 : 0
-####     most_recent = true
-####     db_instance_identifier = var.in_id_of_db_to_clone
-#### }
+/*
+ | --
+ | -- If the in_clone_snapshot flag is true we expect a variable to be
+ | -- set named in_id_of_db_to_clone. A search is enacted to find the
+ | -- latest snapshot of the specified database and the database created
+ | -- here is a clone based on that snapshot.
+ | --
+ | -- Just providing the ID will not cause this cloning to happen, the
+ | -- boolean variable in_clone_snapshot must also be set to true.
+ | --
+*/
+resource aws_db_instance clone {
+
+    count = var.in_clone_snapshot ? 1 : 0
+
+    snapshot_identifier = data.aws_db_snapshot.parent[0].result
+    identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+
+    name     = var.in_database_name
+    username = local.db_username
+    password = random_string.dbpassword.result
+    port     = 5432
+
+    engine         = "postgres"
+    instance_class = "db.t2.large"
+    multi_az       = true
+
+    vpc_security_group_ids = [ var.in_security_group_id ]
+    db_subnet_group_name   = aws_db_subnet_group.me.id
+    skip_final_snapshot    = true
+
+    copy_tags_to_snapshot   = true
+    storage_encrypted       = true
+    storage_encrypted       = true
+    backup_retention_period = 28
+    backup_window           = "21:00-23:00"
+    maintenance_window      = "mon:00:00-mon:03:00"
+
+    tags = {
+        Name  = var.in_database_name
+        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+        Class = "${ var.in_ecosystem_name }"
+        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.parent[0].result } and ${ var.in_tag_description }"
+    }
+}
+
+
+/*
+ | --
+ | -- This data source takes the database ID and returns the Id of the
+ | -- last known snapshot. Beware - a search will be enacted if the ID
+ | -- is provided even when the clone snapshot flag is false.
+ | --
+*/
+data aws_db_snapshot from {
+
+    count = length( var.in_id_of_db_to_clone ) > 0 ? 1 : 0
+    most_recent = true
+    db_instance_identifier = var.in_id_of_db_to_clone
+
+}
 
 
 /*
