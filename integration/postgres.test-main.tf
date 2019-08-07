@@ -32,13 +32,16 @@ variable in_id_of_db_to_clone {
 }
 
 output out_fresh_database_hostname { value = module.fresh_db.out_fresh_db_hostname }
-output out_fresh_database_hostport { value = module.fresh_db.out_fresh_db_hostport }
+output out_fresh_database_endpoint { value = module.fresh_db.out_fresh_db_endpoint }
 
 output out_clone_database_hostname { value = module.clone_db.out_clone_db_hostname }
-output out_clone_database_hostport { value = module.clone_db.out_clone_db_hostport }
+output out_clone_database_endpoint { value = module.clone_db.out_clone_db_endpoint }
 
 output out_fresh_database_username { value = module.fresh_db.out_database_username }
 output out_fresh_database_password { value = module.fresh_db.out_database_password }
+
+output out_clone_database_username { value = module.clone_db.out_database_username }
+output out_clone_database_password { value = module.clone_db.out_database_password }
 
 
 module fresh_db {
@@ -104,9 +107,3 @@ module resource-tags {
     source = "github.com/devops4me/terraform-aws-resource-tags"
 
 }
-
-/*
-variable in_id_of_db_to_clone {
-    description = "The name of the mummy snapshot that gives birth to this (cloned) database instance."
-}
-*/
