@@ -12,6 +12,7 @@
 */
 output out_fresh_db_hostname { value = length( aws_db_instance.fresh ) == 0 ? "n/a" : aws_db_instance.fresh[0].address  }
 output out_fresh_db_hostport { value = length( aws_db_instance.fresh ) == 0 ? "n/a" : aws_db_instance.fresh[0].endpoint }
+
 output out_clone_db_hostname { value = length( aws_db_instance.clone ) == 0 ? "n/a" : aws_db_instance.clone[0].address  }
 output out_clone_db_hostport { value = length( aws_db_instance.clone ) == 0 ? "n/a" : aws_db_instance.clone[0].endpoint }
 

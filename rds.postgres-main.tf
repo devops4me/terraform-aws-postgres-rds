@@ -26,7 +26,7 @@ locals {
 resource aws_db_instance fresh {
 
     count = var.in_clone_snapshot ? 0 : 1
-    identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    identifier = "${ var.in_database_name }-fresh-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
 
     name     = var.in_database_name
     username = local.db_username
@@ -73,8 +73,8 @@ resource aws_db_instance clone {
 
     count = var.in_clone_snapshot ? 1 : 0
 
-    snapshot_identifier = data.aws_db_snapshot.parent[0].result
-    identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    snapshot_identifier = data.aws_db_snapshot.from[0].id
+    identifier = "${ var.in_database_name }-clone-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
 
     name     = var.in_database_name
     username = local.db_username
@@ -99,7 +99,7 @@ resource aws_db_instance clone {
         Name  = var.in_database_name
         Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
         Class = "${ var.in_ecosystem_name }"
-        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.parent[0].result } and ${ var.in_tag_description }"
+        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
     }
 }
 

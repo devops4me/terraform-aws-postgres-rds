@@ -18,7 +18,7 @@ variable in_clone_snapshot {
 }
 
 variable in_id_of_db_to_clone {
-    description = "If the ID of mummy database to clone is omitted the parameter will not be set."
+    description = "The ID of mummy database whose snapshot the database will be cloned from."
     default = ""
 }
 

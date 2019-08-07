@@ -20,21 +20,28 @@ provider aws {
     }
 }
 
-
 locals {
     ecosystem_name = "integration"
-    new_db_name    = "brandnewbox"
-    cloned_db_name = "copycatbox"
+    fresh_db_name  = "brandnewbox"
+    clone_db_name  = "copycatbox"
 }
 
 
-output out_database_hostname { value = module.postgres_db.out_database_hostname }
-output out_database_hostport { value = module.postgres_db.out_database_hostport }
-output out_database_username { value = module.postgres_db.out_database_username }
-output out_database_password { value = module.postgres_db.out_database_password }
+variable in_id_of_db_to_clone {
+    description = "The ID of mummy database to clone from."
+}
+
+output out_fresh_database_hostname { value = module.fresh_db.out_fresh_db_hostname }
+output out_fresh_database_hostport { value = module.fresh_db.out_fresh_db_hostport }
+
+output out_clone_database_hostname { value = module.clone_db.out_clone_db_hostname }
+output out_clone_database_hostport { value = module.clone_db.out_clone_db_hostport }
+
+output out_fresh_database_username { value = module.fresh_db.out_database_username }
+output out_fresh_database_password { value = module.fresh_db.out_database_password }
 
 
-module brand_new_db {
+module fresh_db {
 
     source = "./.."
 
@@ -42,7 +49,7 @@ module brand_new_db {
     in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
     in_id_of_db_to_clone = var.in_id_of_db_to_clone
 
-    in_database_name = local.data_base_name
+    in_database_name = local.fresh_db_name
 
     in_ecosystem_name  = local.ecosystem_name
     in_tag_timestamp   = module.resource-tags.out_tag_timestamp
@@ -50,7 +57,7 @@ module brand_new_db {
 }
 
 
-module cloned_db {
+module clone_db {
 
     source = "./.."
 
@@ -59,7 +66,7 @@ module cloned_db {
     in_id_of_db_to_clone = var.in_id_of_db_to_clone
     in_clone_snapshot = true
 
-    in_database_name = local.data_base_name
+    in_database_name = local.clone_db_name
 
     in_ecosystem_name  = local.ecosystem_name
     in_tag_timestamp   = module.resource-tags.out_tag_timestamp
