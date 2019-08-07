@@ -23,7 +23,7 @@ locals {
  | -- safe to set this variable even when you want a new database.
  | --
 */
-resource aws_db_instance new {
+resource aws_db_instance fresh {
 
     count = var.in_clone_snapshot ? 0 : 1
     identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
@@ -43,7 +43,6 @@ resource aws_db_instance new {
     skip_final_snapshot    = true
 
     copy_tags_to_snapshot   = true
-    storage_encrypted       = true
     storage_encrypted       = true
     backup_retention_period = 28
     backup_window           = "21:00-23:00"
@@ -91,7 +90,6 @@ resource aws_db_instance clone {
     skip_final_snapshot    = true
 
     copy_tags_to_snapshot   = true
-    storage_encrypted       = true
     storage_encrypted       = true
     backup_retention_period = 28
     backup_window           = "21:00-23:00"

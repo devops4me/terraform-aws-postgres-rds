@@ -12,6 +12,11 @@ variable in_database_name {
     description = "The database name remembering that a different name creates another database."
 }
 
+variable in_clone_snapshot {
+    description = "The newly Created database will be a clone from a snapshot if set to true."
+    default = false
+}
+
 variable in_id_of_db_to_clone {
     description = "If the ID of mummy database to clone is omitted the parameter will not be set."
     default = ""

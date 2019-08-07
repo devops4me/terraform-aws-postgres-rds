@@ -23,7 +23,8 @@ provider aws {
 
 locals {
     ecosystem_name = "integration"
-    data_base_name = "infinity"
+    new_db_name    = "brandnewbox"
+    cloned_db_name = "copycatbox"
 }
 
 
@@ -33,13 +34,30 @@ output out_database_username { value = module.postgres_db.out_database_username 
 output out_database_password { value = module.postgres_db.out_database_password }
 
 
-module postgres_db {
+module brand_new_db {
 
     source = "./.."
 
     in_security_group_id = module.security-group.out_security_group_id
     in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
-######################    in_id_of_db_to_clone = var.in_id_of_db_to_clone
+    in_id_of_db_to_clone = var.in_id_of_db_to_clone
+
+    in_database_name = local.data_base_name
+
+    in_ecosystem_name  = local.ecosystem_name
+    in_tag_timestamp   = module.resource-tags.out_tag_timestamp
+    in_tag_description = module.resource-tags.out_tag_description
+}
+
+
+module cloned_db {
+
+    source = "./.."
+
+    in_security_group_id = module.security-group.out_security_group_id
+    in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
+    in_id_of_db_to_clone = var.in_id_of_db_to_clone
+    in_clone_snapshot = true
 
     in_database_name = local.data_base_name
 
