@@ -1,41 +1,51 @@
 
-/*
- | --
- | -- Create a simple 32G AWS PostgreSQL RDS database. This module suits
- | -- rapid proof of concept development - it is not designed to provision
- | -- a production quality enterprise database.
- | --
- | -- The username is readwrite and the database listens on port 5432.
- | -- Just provide a security group, private subnet ids, the database name
- | -- and the ubiquitous tag information.
- | --
- | -- The only outputs needed are the out_database_hostname and the simple
- | -- terraform generated out_database_password.
- | --
-*/
-resource aws_db_instance postgres
-{
-    name                   = "${var.in_database_name}"
-    vpc_security_group_ids = ["${ var.in_security_group_id }"]
-    db_subnet_group_name   = "${ aws_db_subnet_group.object.id }"
 
-    allocated_storage = "32"
-    engine            = "postgres"
-    instance_class    = "db.t2.micro"
-    multi_az          = "true"
-    username          = "readwrite"
-    port              = "5432"
+locals {
 
-    password = "${ random_string.password.result }"
-
-    tags
-    {
-        Name   = "postgres-db-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = "${ var.in_ecosystem_name }"
-        Desc   = "This RDS postgres database for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
-    }
+    db_username = "user_rw_${ random_string.username_suffix.result }"
 
 }
+
+
+/*
+ | --
+ | -- Create a simple AWS PostgreSQL RDS database from either the
+ | -- last available snapshot, or via the specified snapshot identifier
+ | -- of another database.
+ | --
+ | -- This module effectively clones a database at the point at which
+ | -- the snapshot in question is taken.
+ | --
+*/
+resource aws_db_instance postgres {
+
+########    snapshot_identifier = length( data.aws_db_snapshot.parent ) == 0 ? null : data.aws_db_snapshot.parent[0]. ##### is this ID
+    identifier = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+
+    name     = var.in_database_name
+    username = local.db_username
+    password = random_string.dbpassword.result
+    port     = 5432
+
+    engine         = "postgres"
+    instance_class = "db.t2.large"
+    multi_az       = true
+    allocated_storage = 32
+
+    storage_encrypted      = false
+    vpc_security_group_ids = [ var.in_security_group_id ]
+    db_subnet_group_name   = aws_db_subnet_group.me.id
+    skip_final_snapshot    = true
+
+}
+
+
+#### data aws_db_snapshot parent {
+####     count = length( var.in_id_of_db_to_clone ) > 0 ? 1 : 0
+####     most_recent = true
+####     db_instance_identifier = var.in_id_of_db_to_clone
+#### }
+
 
 /*
  | --
@@ -43,32 +53,44 @@ resource aws_db_instance postgres
  | -- the (usually) private subnets denoted by in_db_subnet_ids variable.
  | --
 */
-resource aws_db_subnet_group object
-{
+resource aws_db_subnet_group me {
+
     name_prefix = "db-${ var.in_ecosystem_name }"
     description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
-    subnet_ids  = [ "${ var.in_db_subnet_ids }" ]
+    subnet_ids  = var.in_db_subnet_ids
 
-    tags
-    {
+    tags = {
         Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
         Class = "${ var.in_ecosystem_name }"
         Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
     }
-
 }
+
 
 /*
  | --
  | -- The Terraform generated database password will contain
- | -- 16 alphanumeric characters and no specials. Note that a fixed
- | -- password length greatly reduces the (brute force) search space.
+ | -- thirty two alphanumeric characters and no specials.
  | --
 */
-resource random_string password
-{
-    length  = 16
+resource random_string dbpassword {
+    length  = 32
     upper   = true
+    lower   = true
+    number  = true
+    special = false
+}
+
+
+/*
+ | --
+ | -- It is good practise for the database user name to be suffixed
+ | -- with at least a few random lowercase alpha characters.
+ | --
+*/
+resource random_string username_suffix {
+    length  = 7
+    upper   = false
     lower   = true
     number  = true
     special = false
