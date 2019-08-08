@@ -68,6 +68,10 @@ resource aws_db_instance fresh {
  | -- Just providing the ID will not cause this cloning to happen, the
  | -- boolean variable in_clone_snapshot must also be set to true.
  | --
+ | -- Note that the username and password are absent. You are allowed to
+ | -- reset the database name, however you must know the username and
+ | -- password of the DB the snapshot was created from.
+ | --
 */
 resource aws_db_instance clone {
 
@@ -77,8 +81,6 @@ resource aws_db_instance clone {
     identifier = "${ var.in_database_name }-clone-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
 
     name     = var.in_database_name
-    username = local.db_username
-    password = random_string.dbpassword.result
     port     = 5432
 
     engine         = "postgres"
@@ -147,12 +149,14 @@ resource aws_db_subnet_group me {
  | --
 */
 resource random_string dbpassword {
-    length  = 32
+    length  = 48
     upper   = true
     lower   = true
     number  = true
-    special = false
+    special = true
+    override_special = "()[]-_:="
 }
+
 
 
 /*

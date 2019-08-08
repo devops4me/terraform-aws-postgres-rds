@@ -50,9 +50,7 @@ module fresh_db {
 
     in_security_group_id = module.security-group.out_security_group_id
     in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
-    in_id_of_db_to_clone = var.in_id_of_db_to_clone
-
-    in_database_name = local.fresh_db_name
+    in_database_name     = local.fresh_db_name
 
     in_ecosystem_name  = local.ecosystem_name
     in_tag_timestamp   = module.resource-tags.out_tag_timestamp

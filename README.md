@@ -1,63 +1,81 @@
 
-# Create PostgreSQL RDS Database | Terraform Module
+# PostgreSQL RDS | Enterprise Grade | Terraform Module
 
-Create a simple 32G AWS PostgreSQL RDS database. This module suits rapid proof of concept development - it is not designed to provision a production quality enterprise database.
+Provision either a new **enterprise grade** PostgreSQL RDS database or **create a clone of another database from its snapshot**. In this context enterprise grade means
+- a 48 long password chosen from a set of 70 characters
+- a non predictable master database username string
+- a high redundancy multi-availability zone database
+- private subnet residency in a non-default VPC (if you so wish)
+- behind the scenes encryption at rest
+- robust options for backup (maintenance) windows and retention period
+- sensible descriptive resource tags
 
-The username is readwrite and the database listens on port 5432. Just provide a security group, private subnet ids, the database name and the ubiquitous tag information.
+## From Snapshot or New
 
-The only outputs needed are the out_database_hostname and the simple terraform generated out_database_password.
+This module will conditionally **instantiate from a snapshot** depending on a boolean variable that you provide.
 
-## Usage
+## integration test | Jenkinsfile
 
-    locals
-    {
-        ecosystem_name = "business-app"
+This module comes with an **[integraion test](integration/postgres.test-main.tf)** and a Jenkinsfile so you know that it has been validated day in, day out. It doesn't grow stale and stop working like many other Terraform modules.
+
+## Test Drive | Create Two Databases
+
+Why not test drive this PostgreSQL terraform module.
+
+```
+git clone https://github.com/devops4me/terraform-aws-postgres-rds
+cd terraform-aws-postgres-rds/integration
+# Export your AWS Credentials and Region
+terraform init
+terraform deploy
+```
+
+## Usage | Creating New and Cloned Databases
+
+This is a small insight 
+
+```
+    locals {
+        ecosystem_name = "canary"
+        fresh_db_name  = "freshdb"
+        clone_db_name  = "clonedb"
     }
 
-    module postgres_db
-    {
-        source     = "github.com/devops4me/terraform-aws-postgres-rds"
-        in_security_group_id = "${ module.security-group.out_security_group_id }"
-        in_db_subnet_ids = "${ module.vpc-network.out_private_subnet_ids }"
+    module fresh_db {
 
-        in_database_name = "businessdata"
+        source = "github.com/devops4me/terraform-aws-postgres-rds"
 
-        in_ecosystem_name  = "${ local.ecosystem_name }"
-        in_tag_timestamp   = "${ module.resource-tags.out_tag_timestamp }"
-        in_tag_description = "${ module.resource-tags.out_tag_description }"
+        in_security_group_id = module.security-group.out_security_group_id
+        in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
+        in_database_name     = local.fresh_db_name
+
+        in_ecosystem_name  = local.ecosystem_name
+        in_tag_timestamp   = module.resource-tags.out_tag_timestamp
+        in_tag_description = module.resource-tags.out_tag_description
     }
 
-    module vpc-network
-    {
-        source                 = "github.com/devops4me/terraform-aws-vpc-network"
-        in_vpc_cidr            = "10.66.0.0/16"
-        in_num_public_subnets  = 3
-        in_num_private_subnets = 3
+    module clone_db {
 
-        in_ecosystem_name  = "${ local.ecosystem_name }"
-        in_tag_timestamp   = "${ module.resource-tags.out_tag_timestamp }"
-        in_tag_description = "${ module.resource-tags.out_tag_description }"
+        source = "github.com/devops4me/terraform-aws-postgres-rds"
+
+        in_security_group_id = module.security-group.out_security_group_id
+        in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
+        in_id_of_db_to_clone = var.in_id_of_db_to_clone
+        in_clone_snapshot = true
+
+        in_database_name = local.clone_db_name
+
+        in_ecosystem_name  = local.ecosystem_name
+        in_tag_timestamp   = module.resource-tags.out_tag_timestamp
+        in_tag_description = module.resource-tags.out_tag_description
     }
+```
 
-    module security-group
-    {
-        source         = "github.com/devops4me/terraform-aws-security-group"
-        in_ingress     = [ "ssh", "https",  ]
-        in_vpc_id      = "${ module.vpc-network.out_vpc_id }"
+The important outputs are the **out_database_hostname**, **out_database_username** and the **out_database_password**.
 
-        in_ecosystem_name  = "${ local.ecosystem_name }"
-        in_tag_timestamp   = "${ module.resource-tags.out_tag_timestamp }"
-        in_tag_description = "${ module.resource-tags.out_tag_description }"
-    }
+Look at the integration test for the bells and whistles that terraform demands.
 
-    module resource-tags
-    {
-        source = "github.com/devops4me/terraform-aws-resource-tags"
-    }
-
-
-The important outputs are the **out_database_hostname** and the terraform generated **out_database_password**.
-
+---
 
 ## Inputs
 
