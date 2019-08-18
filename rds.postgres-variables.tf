@@ -22,14 +22,43 @@ variable in_id_of_db_to_clone {
     default = ""
 }
 
-variable in_ecosystem_name {
-    description = "Creational stamp binding all infrastructure created for this ecosystem."
+### ############################## ###
+### [[variable]] in_mandatory_tags ###
+### ############################## ###
+
+variable in_mandatory_tags {
+
+    description = "Optional tags unless your organization mandates that a set of given tags must be set."
+    type        = map
+    default     = { }
 }
+
+
+### ################# ###
+### in_ecosystem_name ###
+### ################# ###
+
+variable in_ecosystem_name {
+
+    description = "Creational stamp binding all infrastructure components created on behalf of this ecosystem instance."
+}
+
+
+### ################ ###
+### in_tag_timestamp ###
+### ################ ###
 
 variable in_tag_timestamp {
-    description = "Ubiquitous alphanumeric timestamp for resource tags like 909081716 ( YMMDDhhmm ) for 9th Nov 2019 at 5:16 pm."
+
+    description = "A timestamp for resource tags in the format ymmdd-hhmm like 80911-1435"
 }
 
+
+### ################## ###
+### in_tag_description ###
+### ################## ###
+
 variable in_tag_description {
-    description = "Ubiquitous description for resource tags detailing who created the resource and when, where and why."
+
+    description = "Ubiquitous note detailing who, when, where and why for every infrastructure component."
 }

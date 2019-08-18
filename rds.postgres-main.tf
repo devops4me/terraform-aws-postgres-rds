@@ -1,4 +1,25 @@
 
+locals {
+
+    subnet_group_tags = {
+        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
+    }
+
+    database_tags = {
+        Name  = var.in_database_name
+        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    }
+
+    cloned_database_tags = {
+        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
+    }
+
+    fresh_database_tags = {
+        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
+    }
+
+}
 
 /*
  | --
@@ -48,12 +69,7 @@ resource aws_db_instance fresh {
     backup_window           = "21:00-23:00"
     maintenance_window      = "mon:00:00-mon:03:00"
 
-    tags = {
-        Name  = var.in_database_name
-        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = "${ var.in_ecosystem_name }"
-        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
-    }
+    tags = merge( local.database_tags, local.fresh_database_tags, var.in_mandatory_tags )
 
 }
 
@@ -97,12 +113,7 @@ resource aws_db_instance clone {
     backup_window           = "21:00-23:00"
     maintenance_window      = "mon:00:00-mon:03:00"
 
-    tags = {
-        Name  = var.in_database_name
-        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = "${ var.in_ecosystem_name }"
-        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
-    }
+    tags = merge( local.database_tags, local.cloned_database_tags, var.in_mandatory_tags )
 }
 
 
@@ -133,19 +144,15 @@ resource aws_db_subnet_group me {
     name_prefix = "db-${ var.in_ecosystem_name }"
     description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
     subnet_ids  = var.in_db_subnet_ids
-
-    tags = {
-        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Class = "${ var.in_ecosystem_name }"
-        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
-    }
+    tags        = merge( local.subnet_group_tags, var.in_mandatory_tags )
 }
 
 
 /*
  | --
  | -- The Terraform generated database password will contain
- | -- thirty two alphanumeric characters and no specials.
+ | -- forty-eight characters that may include all alpha-numerics
+ | -- and eight special printable characters.
  | --
 */
 resource random_string dbpassword {
