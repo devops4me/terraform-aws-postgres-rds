@@ -1,26 +1,4 @@
 
-locals {
-
-    subnet_group_tags = {
-        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
-    }
-
-    database_tags = {
-        Name  = var.in_database_name
-        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-    }
-
-    cloned_database_tags = {
-        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
-    }
-
-    fresh_database_tags = {
-        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
-    }
-
-}
-
 /*
  | --
  | -- The database username is constructed with a prefix of "user_rw_"
@@ -178,4 +156,34 @@ resource random_string username_suffix {
     lower   = true
     number  = true
     special = false
+}
+
+
+
+/*
+ | --
+ | -- These tag definitions are attached onto the databases that are
+ | -- cloned or createed and also the database subnet group.
+ | --
+*/
+locals {
+
+    subnet_group_tags = {
+        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
+    }
+
+    database_tags = {
+        Name  = var.in_database_name
+        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    }
+
+    cloned_database_tags = {
+        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
+    }
+
+    fresh_database_tags = {
+        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
+    }
+
 }
