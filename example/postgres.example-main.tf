@@ -78,7 +78,7 @@ module clone_db {
 module vpc-network {
 
     source                 = "github.com/devops4me/terraform-aws-vpc-network"
-    in_vpc_cidr            = "10.79.0.0/16"
+    in_vpc_cidr            = "10.81.0.0/16"
     in_num_public_subnets  = 3
     in_num_private_subnets = 3
 
