@@ -47,7 +47,7 @@ resource aws_db_instance fresh {
     backup_window           = "21:00-23:00"
     maintenance_window      = "mon:00:00-mon:03:00"
 
-    tags = merge( local.database_tags, local.fresh_database_tags, var.in_mandatory_tags )
+    tags = merge( local.database_tags, local.fresh_database_tags, var.in_mandated_tags )
 
 }
 
@@ -91,7 +91,7 @@ resource aws_db_instance clone {
     backup_window           = "21:00-23:00"
     maintenance_window      = "mon:00:00-mon:03:00"
 
-    tags = merge( local.database_tags, local.cloned_database_tags, var.in_mandatory_tags )
+    tags = merge( local.database_tags, local.cloned_database_tags, var.in_mandated_tags )
 }
 
 
@@ -122,7 +122,7 @@ resource aws_db_subnet_group me {
     name_prefix = "db-${ var.in_ecosystem_name }"
     description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
     subnet_ids  = var.in_db_subnet_ids
-    tags        = merge( local.subnet_group_tags, var.in_mandatory_tags )
+    tags        = merge( local.subnet_group_tags, var.in_mandated_tags )
 }
 
 

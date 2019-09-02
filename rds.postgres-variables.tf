@@ -23,10 +23,10 @@ variable in_id_of_db_to_clone {
 }
 
 ### ############################## ###
-### [[variable]] in_mandatory_tags ###
+### [[variable]] in_mandated_tags ###
 ### ############################## ###
 
-variable in_mandatory_tags {
+variable in_mandated_tags {
 
     description = "Optional tags unless your organization mandates that a set of given tags must be set."
     type        = map
