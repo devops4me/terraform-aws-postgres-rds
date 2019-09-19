@@ -25,7 +25,7 @@ locals {
 resource aws_db_instance fresh {
 
     count = var.in_clone_snapshot ? 0 : 1
-    identifier = "${ var.in_database_name }-fresh-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    identifier = "${ var.in_database_name }-fresh-${ var.in_ecosystem }-${ var.in_timestamp }"
 
     name     = var.in_database_name
     username = local.db_username
@@ -72,7 +72,7 @@ resource aws_db_instance clone {
     count = var.in_clone_snapshot ? 1 : 0
 
     snapshot_identifier = data.aws_db_snapshot.from[0].id
-    identifier = "${ var.in_database_name }-clone-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+    identifier = "${ var.in_database_name }-clone-${ var.in_ecosystem }-${ var.in_timestamp }"
 
     name     = var.in_database_name
     port     = 5432
@@ -119,8 +119,8 @@ data aws_db_snapshot from {
 */
 resource aws_db_subnet_group me {
 
-    name_prefix = "db-${ var.in_ecosystem_name }"
-    description = "RDS postgres subnet group for the ${ var.in_ecosystem_name } database."
+    name_prefix = "db-${ var.in_ecosystem }"
+    description = "RDS postgres subnet group for the ${ var.in_ecosystem } database."
     subnet_ids  = var.in_db_subnet_ids
     tags        = merge( local.subnet_group_tags, var.in_mandated_tags )
 }
@@ -169,21 +169,21 @@ resource random_string username_suffix {
 locals {
 
     subnet_group_tags = {
-        Name   = "db-subnet-group-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
-        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem_name } ${ var.in_tag_description }"
+        Name   = "db-subnet-group-${ var.in_ecosystem }-${ var.in_timestamp }"
+        Desc   = "This RDS postgres database subnet group for ${ var.in_ecosystem } ${ var.in_description }"
     }
 
     database_tags = {
         Name  = var.in_database_name
-        Id    = "${ var.in_database_name }-${ var.in_ecosystem_name }-${ var.in_tag_timestamp }"
+        Id    = "${ var.in_database_name }-${ var.in_ecosystem }-${ var.in_timestamp }"
     }
 
     cloned_database_tags = {
-        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_tag_description }"
+        Desc   = "This PostgreSQL database named ${ var.in_database_name } was cloned from snapshot ${ data.aws_db_snapshot.from[0].id } and ${ var.in_description }"
     }
 
     fresh_database_tags = {
-        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_tag_description }"
+        Desc  = "This brand new PostgreSQL database named ${ var.in_database_name } ${ var.in_description }"
     }
 
 }

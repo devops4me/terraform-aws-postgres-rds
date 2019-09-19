@@ -3,14 +3,17 @@ variable in_security_group_id {
     description = "The ID of the security group protecting the database."
 }
 
+
 variable in_db_subnet_ids {
     type = "list"
     description = "The subnet ids in which the multi-availability zone db resides."
 }
 
+
 variable in_database_name {
-    description = "The database name remembering that a different name creates another database."
+    description = "Alphanumeric only database name starting with a letter and a max length of 32."
 }
+
 
 variable in_clone_snapshot {
     description = "The newly Created database will be a clone from a snapshot if set to true."
@@ -35,30 +38,30 @@ variable in_mandated_tags {
 
 
 ### ################# ###
-### in_ecosystem_name ###
+### in_ecosystem ###
 ### ################# ###
 
-variable in_ecosystem_name {
+variable in_ecosystem {
 
     description = "Creational stamp binding all infrastructure components created on behalf of this ecosystem instance."
 }
 
 
 ### ################ ###
-### in_tag_timestamp ###
+### in_timestamp ###
 ### ################ ###
 
-variable in_tag_timestamp {
+variable in_timestamp {
 
     description = "A timestamp for resource tags in the format ymmdd-hhmm like 80911-1435"
 }
 
 
 ### ################## ###
-### in_tag_description ###
+### in_description ###
 ### ################## ###
 
-variable in_tag_description {
+variable in_description {
 
     description = "Ubiquitous note detailing who, when, where and why for every infrastructure component."
 }

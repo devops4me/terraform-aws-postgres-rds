@@ -1,7 +1,7 @@
 
-# PostgreSQL RDS | Enterprise Grade | Terraform Module
+# PostgreSQL RDS | Create from Snapshot or Create New
 
-Provision either a new **enterprise grade** PostgreSQL RDS database or **create a clone of another database from its snapshot**. In this context enterprise grade means
+Provision _either_ a new **enterprise grade** PostgreSQL RDS database _or_ **create a clone of another database from its snapshot**. In this context enterprise grade means
 - a 48 long password chosen from a set of 70 characters
 - a non predictable master database username string
 - a high redundancy multi-availability zone database
@@ -10,64 +10,36 @@ Provision either a new **enterprise grade** PostgreSQL RDS database or **create 
 - robust options for backup (maintenance) windows and retention period
 - sensible descriptive resource tags
 
-## From Snapshot or New
 
-This module will conditionally **instantiate from a snapshot** depending on a boolean variable that you provide.
+---
 
-## integration test | Jenkinsfile
 
-This module comes with an **[integraion test](integration/postgres.test-main.tf)** and a Jenkinsfile so you know that it has been validated day in, day out. It doesn't grow stale and stop working like many other Terraform modules.
+## Module Usage | Create New and/or Cloned RDS DBs
 
-## Test Drive | Create Two Databases
-
-Why not test drive this PostgreSQL terraform module.
+This module will conditionally **instantiate from a snapshot** depending on whether **`var.in_clone_snapshot`** is true or false. If true the RDS ID of the database to clone must be provided. This last available snapshot is chosen as the baseline for creating the cloned database.
 
 ```
-git clone https://github.com/devops4me/terraform-aws-postgres-rds
-cd terraform-aws-postgres-rds/integration
-# Export your AWS Credentials and Region
-terraform init
-terraform deploy
-```
-
-## Usage | Creating New and Cloned Databases
-
-This is a small insight 
-
-```
-    locals {
-        ecosystem_name = "canary"
-        fresh_db_name  = "freshdb"
-        clone_db_name  = "clonedb"
-    }
-
     module fresh_db {
 
-        source = "github.com/devops4me/terraform-aws-postgres-rds"
+        source                 = "devops4me/postgres-rds/aws"
+        version                = "1.0.1"
 
         in_security_group_id = module.security-group.out_security_group_id
         in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
-        in_database_name     = local.fresh_db_name
-
-        in_ecosystem_name  = local.ecosystem_name
-        in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-        in_tag_description = module.resource-tags.out_tag_description
+        in_database_name     = "fresh_db"
     }
 
     module clone_db {
 
-        source = "github.com/devops4me/terraform-aws-postgres-rds"
+        source                 = "devops4me/postgres-rds/aws"
+        version                = "1.0.1"
+
+        in_clone_snapshot    = true
+        in_id_of_db_to_clone = var.in_id_of_db_to_clone
 
         in_security_group_id = module.security-group.out_security_group_id
         in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
-        in_id_of_db_to_clone = var.in_id_of_db_to_clone
-        in_clone_snapshot = true
-
-        in_database_name = local.clone_db_name
-
-        in_ecosystem_name  = local.ecosystem_name
-        in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-        in_tag_description = module.resource-tags.out_tag_description
+        in_database_name     = "cloned_db"
     }
 ```
 
@@ -75,53 +47,51 @@ The important outputs are the **out_database_hostname**, **out_database_username
 
 Look at the integration test for the bells and whistles that terraform demands.
 
+
 ---
+
 
 ## Inputs
 
 This AWS PostgreSQL database terraform module requires these input variables.
 **Important - the database name must start with a letter (not a digit) and can only contain alphanumerics.**
 
-| Imported | Type | Comment |
+| Input Variable | Type | Comment |
 |:-------- |:---- |:------- |
-**in_security_group_id** | String | security group constraining database traffic flows
-**in_db_subnet_ids** | List | private subnet IDs in which to create the database
-**in_database_name** | String | alphanumeric only name to give the new database
+**in_database_name** | String | **alphanumeric only name** to give the new database and it must start with a letter - note that providing a different name causes terraform to create a different database
+**in_clone_snapshot** | Boolean | if true the in_id_of_db_to_clone must be provided and will cause the database to be created from the last available snapshot of the specified database
+**in_id_of_db_to_clone** | String | this ID must be provided if **`in_clone_snapshot`** is true causing the database to be created from the last available snapshot
+**in_security_group_id** | String | the security group that will constrain traffic to and from the  database
+**in_db_subnet_ids** | List | list of private subnet IDs in at least two availability zones (see example) for housing database instances
 
+
+### Resource Tag Inputs
+
+Most organisations have a mandatory set of tags that must be placed on AWS resources for cost and billing reports. Typically they denote owners and specify whether environments are prod or non-prod.
+
+
+Additionally you can denote 
+
+| Input Variable    | Variable Description | Input Example
+|:----------------- |:-------------------- |:----- |
+**`in_ecosystem`** | the ecosystem (environment) name these resources belong to | **`my-app-test`** or **`kubernetes-cluster`**
+**`in_timestamp`** | the timestamp in resource names helps you identify which environment instance resources belong to | **`1911021435`** as **`$(date +%y%m%d%H%M%S)`**
+**`in_description`** | a human readable description usually stating who is creating the resource and when and where | "was created by $USER@$HOSTNAME on $(date)."
+
+Try **`echo $(date +%y%m%d%H%M%S)`** to check your timestamp and **`echo "was created by $USER@$HOSTNAME on $(date)."`** to check your description. Here is how you can send these values to terraform.
+
+```
+$ export TF_VAR_in_timestamp=$(date +%y%m%d%H%M%S)
+$ export TF_VAR_in_description="was created by $USER@$HOSTNAME on $(date)."
+```
 
 ## Outputs
 
-| Exported                 | Type   | Comment |
+| Output Variable          | Type   | Comment |
 |:------------------------ |:------ |:------- |
-**out_database_hostname**  | String | The addressable hostname of the database
-**out_database_password**  | String | password protecting the database account
-
-
-### Contributing
-
-Bug reports and pull requests are welcome on GitHub at the https://github.com/devops4me/terraform-aws-postgres-rds page. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
-
-License
--------
-
-MIT License
-Copyright (c) 2006 - 2014
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**out_database_username**  | String | The first database username prefixed with user_rw_ followed by randomized characters.
+**out_database_password**  | String | Robust terraform created 48 character password that includes the allowed special characters
+**out_clone_db_hostname**  | String | The addressable hostname of the database that has been cloned from a snapshot
+**out_clone_db_endpoint**  | String | The database endpoint with protool suffix of the database that has been cloned from a snapshot
+**out_fresh_db_hostname**  | String | The addressable hostname of the newly created (fresh) database
+**out_fresh_db_endpoint**  | String | The database endpoint with protool suffix of the newly created (fresh) database

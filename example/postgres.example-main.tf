@@ -52,9 +52,9 @@ module fresh_db {
     in_db_subnet_ids     = module.vpc-network.out_private_subnet_ids
     in_database_name     = local.fresh_db_name
 
-    in_ecosystem_name  = local.ecosystem_name
-    in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-    in_tag_description = module.resource-tags.out_tag_description
+    in_ecosystem  = local.ecosystem_name
+    in_timestamp   = module.resource-tags.out_tag_timestamp
+    in_description = module.resource-tags.out_tag_description
 }
 
 
@@ -69,9 +69,9 @@ module clone_db {
 
     in_database_name = local.clone_db_name
 
-    in_ecosystem_name  = local.ecosystem_name
-    in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-    in_tag_description = module.resource-tags.out_tag_description
+    in_ecosystem  = local.ecosystem_name
+    in_timestamp   = module.resource-tags.out_tag_timestamp
+    in_description = module.resource-tags.out_tag_description
 }
 
 
@@ -82,9 +82,9 @@ module vpc-network {
     in_num_public_subnets  = 3
     in_num_private_subnets = 3
 
-    in_ecosystem_name  = local.ecosystem_name
-    in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-    in_tag_description = module.resource-tags.out_tag_description
+    in_ecosystem  = local.ecosystem_name
+    in_timestamp   = module.resource-tags.out_tag_timestamp
+    in_description = module.resource-tags.out_tag_description
 }
 
 
@@ -94,9 +94,9 @@ module security-group {
     in_ingress     = [ "postgres" ]
     in_vpc_id      = module.vpc-network.out_vpc_id
 
-    in_ecosystem_name  = local.ecosystem_name
-    in_tag_timestamp   = module.resource-tags.out_tag_timestamp
-    in_tag_description = module.resource-tags.out_tag_description
+    in_ecosystem  = local.ecosystem_name
+    in_timestamp   = module.resource-tags.out_tag_timestamp
+    in_description = module.resource-tags.out_tag_description
 }
 
 
