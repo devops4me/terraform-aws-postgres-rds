@@ -69,9 +69,6 @@ This AWS PostgreSQL database terraform module requires these input variables.
 
 Most organisations have a mandatory set of tags that must be placed on AWS resources for cost and billing reports. Typically they denote owners and specify whether environments are prod or non-prod.
 
-
-Additionally you can denote 
-
 | Input Variable    | Variable Description | Input Example
 |:----------------- |:-------------------- |:----- |
 **`in_ecosystem`** | the ecosystem (environment) name these resources belong to | **`my-app-test`** or **`kubernetes-cluster`**
