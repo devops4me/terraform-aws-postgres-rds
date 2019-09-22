@@ -25,7 +25,9 @@ locals {
 resource aws_db_instance fresh {
 
     count = var.in_clone_snapshot ? 0 : 1
+
     identifier = "${ var.in_database_name }-fresh-${ var.in_ecosystem }-${ var.in_timestamp }"
+    publicly_accessible = var.in_publicly_accessible
 
     name     = var.in_database_name
     username = local.db_username
@@ -73,6 +75,7 @@ resource aws_db_instance clone {
 
     snapshot_identifier = data.aws_db_snapshot.from[0].id
     identifier = "${ var.in_database_name }-clone-${ var.in_ecosystem }-${ var.in_timestamp }"
+    publicly_accessible = var.in_publicly_accessible
 
     name     = var.in_database_name
     port     = 5432

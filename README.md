@@ -58,11 +58,11 @@ This AWS PostgreSQL database terraform module requires these input variables.
 
 | Input Variable | Type | Comment |
 |:-------- |:---- |:------- |
-**in_database_name** | String | **alphanumeric only name** to give the new database and it must start with a letter - note that providing a different name causes terraform to create a different database
-**in_clone_snapshot** | Boolean | if true the in_id_of_db_to_clone must be provided and will cause the database to be created from the last available snapshot of the specified database
-**in_id_of_db_to_clone** | String | this ID must be provided if **`in_clone_snapshot`** is true causing the database to be created from the last available snapshot
-**in_security_group_id** | String | the security group that will constrain traffic to and from the  database
-**in_db_subnet_ids** | List | list of private subnet IDs in at least two availability zones (see example) for housing database instances
+**`in_database_name`** | String | **alphanumeric only name** to give the new database and it must start with a letter - note that providing a different name causes terraform to create a different database
+**`in_clone_snapshot`** | Boolean | if true the in_id_of_db_to_clone must be provided and will cause the database to be created from the last available snapshot of the specified database
+**`in_id_of_db_to_clone`** | String | this ID must be provided if **`in_clone_snapshot`** is true causing the database to be created from the last available snapshot
+**`in_security_group_id`** | String | the security group that will constrain traffic to and from the  database
+**`in_db_subnet_ids`** | List | list of private subnet IDs in at least two availability zones (see example) for housing database instances
 
 
 ### Resource Tag Inputs
@@ -84,11 +84,9 @@ $ export TF_VAR_in_description="was created by $USER@$HOSTNAME on $(date)."
 
 ## Outputs
 
-| Output Variable          | Type   | Comment |
-|:------------------------ |:------ |:------- |
-**out_database_username**  | String | The first database username prefixed with user_rw_ followed by randomized characters.
-**out_database_password**  | String | Robust terraform created 48 character password that includes the allowed special characters
-**out_clone_db_hostname**  | String | The addressable hostname of the database that has been cloned from a snapshot
-**out_clone_db_endpoint**  | String | The database endpoint with protool suffix of the database that has been cloned from a snapshot
-**out_fresh_db_hostname**  | String | The addressable hostname of the newly created (fresh) database
-**out_fresh_db_endpoint**  | String | The database endpoint with protool suffix of the newly created (fresh) database
+| Output Variable            | Type   | Comment |
+|:-------------------------- |:------ |:------- |
+**`out_database_username`**  | String | The first database username prefixed with user_rw_ followed by randomized characters.
+**`out_database_password`**  | String | Robust terraform created 48 character password that includes the allowed special characters
+**`out_clone_db_hostname`**  | String | The addressable hostname of the database that has been cloned from a snapshot
+**`out_fresh_db_hostname`**  | String | The addressable hostname of the newly created (fresh) database
